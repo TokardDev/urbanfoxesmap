@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Exemple de carte Google Maps</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="utf-8">
+	<!-- Chargement de Bootstrap pour le menu de navigation -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+	<style>
+		/* CSS pour la carte */
+		#map {
+			height: calc(100vh - 56px);
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<!-- Menu de navigation Bootstrap -->
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">UrbanFoxes's MAP</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">À propos</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Contact</a>
+        </li>
+      </ul>
+      {% if 'user' in session %}
+      <div class="navbar-text text-right">
+        {% if session['admin'] %}
+        <a href="{{ url_for('index') }}" style="padding-right:10px; color: red;">Admin</a>
+        {% endif %}
+        Connecté : {{ session['user'] }}
+        <a href="{{ url_for('logout') }}" style="padding-left:10px;">Se déconnecter</a>
+      </div>
+      {% else %}
+      <div class="navbar-text text-right">
+        <a href="{{ url_for('login') }}">Se connecter</a>
+      </div>
+      {% endif %}
+    </div>
+  </nav>
+
+	<!-- Div qui contiendra la carte -->
+	<div id="map"></div>
+
+	<!-- Chargement de l'API Google Maps -->
+	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUxEG91RFsd9FnPQFvyNLW_8uqj9j8v-o&callback=initMap"></script>
+
+	<script>
+
+        previousMarked = null;
+
+        async function init_window_marker(id) {
+        const url = `http://127.0.0.1:5000/api/get_marker/${id}`;
+
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+
+          // Traiter les données renvoyées par l'API Flask
+          id_sticker = data.id;
+          createur = data.createur;
+          type_id = data.type_id;
+          lat = data.lat;
+          lon = data.lon;
+          lien = data.lien;
+          titre = data.titre;
+          description = data.description;
+
+          var contentString = '<div id="content" style="max-width:200px">' +
+          '<h5 id="firstHeading" class="firstHeading">' + titre + '</h5>' +
+          '<p><strong>Posé par : </strong>' + createur + '</p>' +
+          '<div id="bodyContent">' +
+          '<p><strong>Type:</strong> ' +
+          (function() {
+            switch (type_id) {
+              case 0:
+                return 'Sticker (Arson)'
+              case 1:
+                return 'Sticker (Toka)';
+              case 2:
+                return 'Sticker (Duo)';
+              case 3:
+                return 'Dessin';
+              default:
+                return 'autre';
+            }
+          })() +
+          '</p>' +
+          '<div class="d-flex justify-content-center">' +
+          (lien ? '<img src="' + lien + '" alt="Preview de la photo" style="max-width: 200px;">' : '') +
+          '</div>' +
+          '<p style="font-size: 11px; color: gray;"><strong>ID:</strong> ' + id_sticker + '</p>' +
+          '<a href="http://127.0.0.1:5000/marker/' + id + '" class="btn btn-primary w-100">Voir plus</a>' +
+          '</div>' +
+          '</div>';
+
+          return contentString;
+        } catch (error) {
+          // Gérer les erreurs d'appel à l'API Flask
+          console.error(`Erreur lors de l'appel à l'API : ${error}`);
+        }
+      }
+
+
+
+
+function createMarker(type, lat, lon, id, map) {
+  var markerLatLng = {lat: lat, lng: lon};
+  var markerIcon = {
+    url: 'http://127.0.0.1:5000/api/get_marker_img/'+type,
+  };
+  var marker = new google.maps.Marker({
+    position: markerLatLng,
+    map: map,
+    id : id,
+    icon: markerIcon, 
+  });
+
+  /*
+  
+
+
+
+*/
+  /*
+  marker.addListener('mouseover', async function() {
+    if (previousMarked != null) {
+      previousMarked.infoWindow.close();
+    }
+
+    var infowindow = new google.maps.InfoWindow({
+            content: await init_window_marker(marker.id)
+    });
+    infowindow.open(map, marker);
+    previousMarked = marker;
+    marker.infoWindow = infowindow;
+  });*/
+  // on click on map close infowindow
+    map.addListener('click', function() {
+      if (previousMarked != null) {
+      previousMarked.infoWindow.close();
+    }
+    });  
+  // on click redirect to localhost/map/markers.php?id=marker.id
+  marker.addListener('click', async function() {
+    if (previousMarked != null) {
+      previousMarked.infoWindow.close();
+    }
+
+    var infowindow = new google.maps.InfoWindow({
+            content: await init_window_marker(marker.id)
+    });
+    infowindow.open(map, marker);
+    previousMarked = marker;
+    marker.infoWindow = infowindow;
+  });
+  
+}
+
+
+
+function initMap() {
+  // Coordonnées du marqueur
+
+  // Coordonnées de départ de la carte
+  var mapLatLng = {lat: 43.600000, lng: 1.433333};
+
+  // Création de la carte Google Maps
+  var map = new google.maps.Map(document.getElementById('map'), {
+    center: mapLatLng,
+    zoom: 13,
+    styles: [
+    {
+      featureType: "poi",
+      elementType: "labels",
+      stylers: [{ visibility: "off" }]
+    }
+  ]
+  });
+
+  fetch('http://127.0.0.1:5000/api/get_all_markers_pos')
+  .then(response => response.json())
+  .then(data => {
+    // Parcours des marqueurs et création de chaque marqueur
+    data.forEach(marker => {
+      createMarker(marker.type, marker.lat, marker.long, marker.id, map);
+    });
+  })
+  .catch(error => console.error(error));
+
+}
+
+
+
+	</script>
+
+	<!-- Chargement de Bootstrap pour les scripts JavaScript -->
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>
