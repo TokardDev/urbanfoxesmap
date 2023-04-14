@@ -1,6 +1,6 @@
 import requests
 
-def addmarker(username, password, createur, type_id, lat, lon, lien, titre, description):
+def addmarker(createur, type_id, lat, lon, lien, titre, description, token):
     url = 'http://127.0.0.1:5000/api/add_marker'
 
     # Les données à envoyer en POST
@@ -9,11 +9,10 @@ def addmarker(username, password, createur, type_id, lat, lon, lien, titre, desc
         'type_id': type_id,
         'lat': lat, 
         'lon': lon, 
-        'username' : username,
-        'password' : password,
         'lien' : lien, 
         'titre' : titre,
-        'description' : description
+        'description' : description,
+        'token' : token
     }
 
     # Envoyer la requête POST
@@ -22,11 +21,10 @@ def addmarker(username, password, createur, type_id, lat, lon, lien, titre, desc
     # Afficher la réponse du serveur
     print(response.text)
 
-def dropMarkers(username, password):
+def dropMarkers(token):
     url = 'http://127.0.0.1:5000/api/drop_markers'
     data = {
-        'username' : username,
-        'password' : password,
+        'token' : token
     }
 
     # Envoyer la requête POST
@@ -35,45 +33,55 @@ def dropMarkers(username, password):
     # Afficher la réponse du serveur
     print(response.text)
 
-def addAdmin(username, password, new_username, new_password):
+def addAdmin(new_username, new_password, token):
     url = 'http://127.0.0.1:5000/api/add_admin'
     data = {
-        'username' : username,
-        'password' : password,
         'new_username' : new_username,
-        'new_password' : new_password
+        'new_password' : new_password,
+        'token' : token
         
     }
-
     # Envoyer la requête POST
     response = requests.post(url, data=data)
-
     # Afficher la réponse du serveur
     print(response.text)
 
 
 def getMarkers():
     url = 'http://127.0.0.1:5000/api/get_all_markers_pos'
-
     # Envoyer la requête POST
     response = requests.get(url)
-
     # Afficher la réponse du serveur
     print(response.text)
 
-def add_user(username, password, new_username, new_password, email):
+
+def add_user(new_username, new_password, email, token=None):
     url = 'http://127.0.0.1:5000/api/add_user'
     data = {
-        'username' : username,
-        'password' : password,
         'email' : email,
         'new_username' : new_username,
         'new_password' : new_password
     }
 
+    if token != None:
+        data['token'] = token
+
     # Envoyer la requête POST
     response = requests.post(url, data=data)
     print(response.text)
+
+
+def get_token(username, password):
+    url = 'http://127.0.0.1:5000/api/get_token'
+    data = {
+        'username' : username,
+        'password' : password,
+    }
+
+    # Envoyer la requête POST
+    response = requests.post(url, data=data)
+    print(response.text)
+    return response.text
 
 
 def getMarker(id):
@@ -99,4 +107,20 @@ addmarker('tokageki', 'tokapass', 'Arson', 2, 44.664770, -1.163623, 'https://med
 #dropMarkers('tokageki', 'tokapass')
 
 #add_user('tokageki', 'tokapass', 'klem97', 'klem97', 'klem@gmail.com')
-addAdmin('tokageki', 'tokapass', 'arson', 'arsonpass')
+#addAdmin('tokageki', 'tokapass', 'arson', 'arsonpass')
+
+token = get_token('tokageki', 'tokapass')
+#addmarker('tokageki', 'tokapass', 'Tokageki', 1, 43.607081, 1.455997, 'https://cdn.discordapp.com/attachments/828942054783975454/1095301008701280256/20230304_184253.jpg', 'bear\'s bar 2', 'sticker placé sur le poteau en face du bear\'s', token)
+
+"""
+for i in range(4):
+    import random
+    import string
+    alphabet = string.ascii_letters + string.digits
+    random_string = ''.join(random.choices(alphabet, k=10))
+    add_user(random_string, 'test', "mail@test.com")
+"""
+
+for i in range(10):
+    getMarker(i)
+

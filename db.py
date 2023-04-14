@@ -20,5 +20,31 @@ def create_db():
     );
     ''')
     conn.commit()
+
+    cursor.execute('''DROP TABLE IF EXISTS ip_requests;''')
+    conn.commit()
+
+    # Création de la table ip_requests
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS ip_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ''')
+
+    # Enregistrement des changements
+    conn.commit()
+
+
+    cursor.execute(''' CREATE TABLE IF NOT EXISTS tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    token TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    expiration_date INTEGER NOT NULL
+    );
+    ''')
+
+    conn.commit()
     conn.close()
 
