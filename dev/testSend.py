@@ -1,6 +1,6 @@
 import requests
 
-def addmarker(username, password, createur, type_id, lat, lon, lien, titre, description):
+def addmarker(username, password, createur, type_id, lat, lon, lien, titre, description, token):
     url = 'http://127.0.0.1:5000/api/add_marker'
 
     # Les données à envoyer en POST
@@ -13,7 +13,8 @@ def addmarker(username, password, createur, type_id, lat, lon, lien, titre, desc
         'password' : password,
         'lien' : lien, 
         'titre' : titre,
-        'description' : description
+        'description' : description,
+        'token' : token
     }
 
     # Envoyer la requête POST
@@ -61,19 +62,33 @@ def getMarkers():
     # Afficher la réponse du serveur
     print(response.text)
 
-def add_user(username, password, new_username, new_password, email):
+def add_user(new_username, new_password, email, token=None):
     url = 'http://127.0.0.1:5000/api/add_user'
     data = {
-        'username' : username,
-        'password' : password,
         'email' : email,
         'new_username' : new_username,
         'new_password' : new_password
     }
 
+    if token != None:
+        data['token'] = token
+
     # Envoyer la requête POST
     response = requests.post(url, data=data)
     print(response.text)
+
+
+def get_token(username, password):
+    url = 'http://127.0.0.1:5000/api/get_token'
+    data = {
+        'username' : username,
+        'password' : password,
+    }
+
+    # Envoyer la requête POST
+    response = requests.post(url, data=data)
+    print(response.text)
+    return response.text
 
 
 def getMarker(id):
@@ -99,4 +114,13 @@ addmarker('tokageki', 'tokapass', 'Arson', 2, 44.664770, -1.163623, 'https://med
 #dropMarkers('tokageki', 'tokapass')
 
 #add_user('tokageki', 'tokapass', 'klem97', 'klem97', 'klem@gmail.com')
-addAdmin('tokageki', 'tokapass', 'arson', 'arsonpass')
+#addAdmin('tokageki', 'tokapass', 'arson', 'arsonpass')
+
+token = get_token('tokageki', 'tokapass')
+#addmarker('tokageki', 'tokapass', 'Tokageki', 1, 43.607081, 1.455997, 'https://cdn.discordapp.com/attachments/828942054783975454/1095301008701280256/20230304_184253.jpg', 'bear\'s bar 2', 'sticker placé sur le poteau en face du bear\'s', token)
+
+add_user('aadddfdgfdsdsfdsfgddddds', 'klem97', "mail@test.com")
+add_user('fddddfgdddsfdsfsgfdd', 'arsonpass', "mail@test.com")
+add_user('peaddfasddfdsdfaautetre', 'tokapass', "mail@test.com")
+add_user('sdfsdsdgfdsdgfsfddsf', 'tokapass', "mail@test.com")
+
