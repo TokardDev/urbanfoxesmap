@@ -9,7 +9,7 @@ import sqlite3
 
 app = Flask(__name__)
 create_db()
-app.secret_key = "f71c316a6156ffe04b6a3e4d7729af2d"
+app.secret_key = "your secret key here"
 
 app.register_blueprint(api_blueprint) # Register the api
 
